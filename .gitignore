@@ -1,0 +1,4 @@
+*.class
+.DS_Store
+test_filer/
+Oblig5Del1/*/
