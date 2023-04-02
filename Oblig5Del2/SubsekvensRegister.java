@@ -1,14 +1,8 @@
-/*  Oppgave 2
- *      ↳ Enkel beholder, velger ArrayList som tar vare på alle HashMaps
+/*  Oppgave 6
+ *      ↳ Bygg en monitor rundt 
  *      ↳ Ta ut vilkårlige HashMaps (med indeks)
- *      ↳ spørre hvor mange HashMaps den inneholder
- * Oppgave 3
- *      ↳ Statisk metode som leser én fil med én persons rep, og lager én hashmap
- * Oppgave 4
- *      ↳ Statisk metode som slår sammen to hashmaps, med parametere som er
- *         referanser til de to som skal slås sammen, mens returverdien er
- *         referanse til den sammenslåtte hashmapen
- *      ↳ Er subsekvensene like skal antallet oppdateres ved å summere
+ 
+ *      
  */
 import java.io.File;
 import java.io.IOException;
