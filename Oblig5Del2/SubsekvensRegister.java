@@ -1,8 +1,6 @@
 /*  Oppgave 6
  *      ↳ Bygg en monitor rundt 
  *      ↳ Ta ut vilkårlige HashMaps (med indeks)
- 
- *      
  */
 import java.io.File;
 import java.io.IOException;
@@ -56,8 +54,8 @@ public class SubsekvensRegister {
                             
                             returnerendeHashMap.put(resultat, sub);
                         }
-                    } else {
-                        break; // stopper programmet
+                    } else { // stopper programmet
+                        break; 
                     }
                 }
             }
