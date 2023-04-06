@@ -5,6 +5,8 @@
  * Oppgave 3
  *      ↳ Statisk metode som leser én fil med én persons rep, og lager én hashmap
  * Oppgave 4
+ *   (ide- hva om sammenfletting ikke fjerner, men tar ut én, legger den inn i en annen, if.equalsToIgnoreCase
+ *    så endrer jeg antall, og så remover jeg. så indeks 1 går inn i 0 while>1)
  *      ↳ Statisk metode som slår sammen to hashmaps, med parametere som er
  *         referanser til de to som skal slås sammen, mens returverdien er
  *         referanse til den sammenslåtte hashmapen
