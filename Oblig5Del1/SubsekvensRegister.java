@@ -77,7 +77,7 @@ public class SubsekvensRegister {
         }
         return returnerendeHashMap;
     } 
-
+ // må legges til for å flette, så må ikke auto fjerne! 
     public static HashMap<String, Subsekvens> flettSammenTo(HashMap<String, Subsekvens> hm1, HashMap<String, Subsekvens> hm2){
         HashMap<String, Subsekvens> res = new HashMap<>(hm1); // initialiserer den som den ene (hm1 i dette tilfellet)
         
