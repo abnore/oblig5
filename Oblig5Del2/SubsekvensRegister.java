@@ -4,12 +4,14 @@
  */
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class SubsekvensRegister {
-    private ArrayList<HashMap<String, Subsekvens>> hashBeholder = new ArrayList<>();
+    private Deque<HashMap<String, Subsekvens>> hashBeholder = new ArrayDeque<>();
+
     final static int lengdeSubsekvens = 3; // konstant lengde på sekvenser
 
     public void leggTilHashmap(HashMap<String,Subsekvens> hm){
@@ -17,9 +19,7 @@ public class SubsekvensRegister {
     }
     
     public HashMap<String, Subsekvens> taUtHashmap(){ // returnerer og fjerner den valgte hashmap'en
-        HashMap<String, Subsekvens> midlertidig = hashBeholder.get(0);
-        hashBeholder.remove(0);
-        return midlertidig;
+        return hashBeholder.removeFirst();
     }
     
     public int hvorMangeHashmap(){
@@ -69,21 +69,39 @@ public class SubsekvensRegister {
     } 
 
     public static HashMap<String, Subsekvens> flettSammenTo(HashMap<String, Subsekvens> hm1, HashMap<String, Subsekvens> hm2){
-        HashMap<String, Subsekvens> res = new HashMap<>(hm1); // initialiserer den som den ene (hm1 i dette tilfellet)
-        
-        for (String key1 : hm1.keySet()) {  // for hver key
-            for(String key2 : hm2.keySet()){ // sjekker med hver key i den andre
-                if (key1.equalsIgnoreCase(key2)){ // 
-                    res.put(key2, hm2.get(key2)); // putter den inn først (kanskje dette er den lengste filen, og den overskriver uansett)
-                    Subsekvens value1 = hm1.get(key1); // henter ut Subsekvensene fra den jeg sammenligner med og den nye
-                    Subsekvens value2 = res.get(key2); // verdien på den som er puttet inn
-                    int nyttTall = value1.hentAntall() + value2.hentAntall(); // slår sammen antallene
-                    value2.endreAntall(nyttTall); // endrer tallet på den som er i den nye
+        HashMap<String, Subsekvens> res, hash1, hash2;
+        if(hm1.size() >= hm2.size()){ // initialiserer resMapen som den største av de den tar inn
+            res = new HashMap<>(hm1);
+            hash1 = hm1;
+            hash2 = hm2;
+        } else {
+            res = new HashMap<>(hm2);
+            hash1 = hm2;
+            hash2 = hm1;
+        }
+        for (String key : hash2.keySet()) {
+            if(hash1.containsKey(key)){
+                res.put(key, hash2.get(key));
+                Subsekvens value1 = hash1.get(key); // henter ut Subsekvensene fra den jeg sammenligner med og den nye
+                Subsekvens value2 = res.get(key); // verdien på den som er puttet inn
+                value2.endreAntall(value1.hentAntall()); // endrer tallet på den som er i den nye
             } else {
-                 res.put(key2, hm2.get(key2)); // om ikke, bare putter den inn
+                res.put(key, hash2.get(key)); // om ikke, bare putter den inn
             }
         }
-    } 
+    // HashMap<String, Subsekvens> res = new HashMap<>(hm1); // initialiserer den som den ene (hm1 i dette tilfellet)
+    //     for (String key1 : hm1.keySet()) {  // for hver key
+    //         for(String key2 : hm2.keySet()){ // sjekker med hver key i den andre
+    //             if (key1.equalsIgnoreCase(key2)){ // 
+    //                 res.put(key2, hm2.get(key2));
+    //                 Subsekvens value1 = hm1.get(key1); // henter ut Subsekvensene fra den jeg sammenligner med og den nye
+    //                 Subsekvens value2 = res.get(key2); // verdien på den som er puttet inn
+    //                 value2.endreAntall(value1.hentAntall()); // endrer tallet på den som er i den nye
+    //         } else {
+    //              res.put(key2, hm2.get(key2)); // om ikke, bare putter den inn
+    //         }
+    //     }
+    // } 
         return res;
     }     
 }

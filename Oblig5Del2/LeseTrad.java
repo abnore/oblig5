@@ -1,24 +1,21 @@
 import java.util.concurrent.CountDownLatch;
+import java.util.HashMap;
 
 public class LeseTrad implements Runnable {
     private Monitor1 monitor;
     private String fil;
-    private CountDownLatch antallHashmaps;
+    private CountDownLatch countdown;
 
-    public LeseTrad(Monitor1 monitor, String fil, CountDownLatch antallHashmaps){
+    public LeseTrad(Monitor1 monitor, String fil, CountDownLatch countdown){
         this.monitor = monitor;
         this.fil = fil;
-        this.antallHashmaps = antallHashmaps;
+        this.countdown = countdown;
     }
     
     public void run(){
-        while (antallHashmaps.getCount() > 0 && !Thread.interrupted()){
-            antallHashmaps.countDown();
-
-            monitor.leggTilHashmap(Monitor1.lesFil(fil));
-            int tall = monitor.hvorMangeHashmap();
-            System.out.println(tall+" hashmaps");
+            HashMap<String,Subsekvens> hm = Monitor1.lesFil(fil);
+            monitor.leggTilHashmap(hm);
+            countdown.countDown();
         }
     }
 
-}
