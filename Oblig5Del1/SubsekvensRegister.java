@@ -14,22 +14,40 @@
  */
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+/*
+Deque<Integer> arrayQueue = new ArrayDeque<>();
+Deque<Integer> linkedListQueue = new LinkedList<>();
+
+// these operations are useful and same on both.
+arrayQueue.push()/addFirst()/addLast();
+
+arrayQueue.remove()/removeFirst()/removeLast()/pop();
+
+arrayQueue.peek()/peekFirst()/peekLast()/size()/
+ */
 
 public class SubsekvensRegister {
-    private ArrayList<HashMap<String, Subsekvens>> hashBeholder = new ArrayList<>();
+
+    private Deque<HashMap<String, Subsekvens>> hashBeholder = new ArrayDeque<>();
     final static int lengdeSubsekvens = 3; // konstant lengde på sekvenser
 
+    
+    
     public void leggTilHashmap(HashMap<String,Subsekvens> hm){
         hashBeholder.add(hm);
     }
-    
+
     public HashMap<String, Subsekvens> taUtHashmap(){ // returnerer og fjerner den valgte hashmap'en
-        HashMap<String, Subsekvens> midlertidig = hashBeholder.get(0);
-        hashBeholder.remove(0);
+        // return hashBeholder.peekFirst();
+        HashMap<String, Subsekvens> midlertidig = hashBeholder.getFirst();
+        hashBeholder.removeFirst();
         return midlertidig;
+        
     }
     
     public int hvorMangeHashmap(){
@@ -79,6 +97,7 @@ public class SubsekvensRegister {
     } 
  // må legges til for å flette, så må ikke auto fjerne! 
     public static HashMap<String, Subsekvens> flettSammenTo(HashMap<String, Subsekvens> hm1, HashMap<String, Subsekvens> hm2){
+
         HashMap<String, Subsekvens> res = new HashMap<>(hm1); // initialiserer den som den ene (hm1 i dette tilfellet)
         
         for (String key1 : hm1.keySet()) {  // for hver key
@@ -93,7 +112,7 @@ public class SubsekvensRegister {
                  res.put(key2, hm2.get(key2)); // om ikke, bare putter den inn
             }
         }
-    } 
+    }  
         return res;
     }     
 }
