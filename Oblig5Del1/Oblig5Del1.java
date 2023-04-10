@@ -1,21 +1,20 @@
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.Scanner;
-import java.io.File;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 public class Oblig5Del1 {
-    /*
+    /****************************************************************************************************
      * Main filen for Del 1:
-     *  ↳ tar inn et mappenavn og utfører analyse av datafilene
-     */
+     * ↳ tar inn et mappenavn og utfører analyse av datafilene
+     ****************************************************************************************************/
     public static void main(String[] args) {
-        
         long starttid = System.currentTimeMillis(); // Timer for programmets varighet
-
-        SubsekvensRegister beholder = new SubsekvensRegister(); // Oppretter en ny beholder av hashmaps med medfølgende metoder
-        /*
-         * Mappenavn som parameter
-         */
+        SubsekvensRegister beholder = new SubsekvensRegister();
+    /*
+     * Mappenavn som parameter
+     */
         if (args.length == 0) {
             System.err.println("Error: Vennligst gi et mappenavn som et command-line argument.");
             return;
@@ -23,24 +22,37 @@ public class Oblig5Del1 {
         String mappenavn = args[0]; // Det som skrives inn som parameter i terminal
         System.out.println("Oppretter en beholder for mappenavnet: " + mappenavn);
 
-        /*
-         * Leser inn filen metadata og lagrer i en ArrayList slik at vi har tilgang til alle filene i samme mappe
-         */
-        ArrayList<String> filnavn = new ArrayList<>();
+    /****************************************************************************************************
+     * Leser inn filen metadata og lagrer i en ArrayList slik at vi har tilgang til
+     * alle filene i samme mappe
+     ****************************************************************************************************/
+
+        BufferedReader leser = null;
+        ArrayDeque<String> filnavn = new ArrayDeque<>();
         try {
-            Scanner sc = new Scanner(new File(mappenavn + "/metadata.csv"));
-            while (sc.hasNextLine()) {
-                String[] lestLinje = sc.nextLine().split(","); // her fjerner jeg "true, false" referanse
-                                                               // ########################
-                filnavn.add(lestLinje[0]); // går inn i metadatafilen og leser linjene inn i filnavn
+            FileReader innlestFil = new FileReader(mappenavn + "/metadata.csv");
+            leser = new BufferedReader(innlestFil);
+            String linje;
+            
+            while ((linje = leser.readLine()) != null){
+                String[] lestLinje = linje.split(","); // her fjerner jeg "true, false" referanse ##########
+                filnavn.add(lestLinje[0]);
             }
-        } catch (Exception e) {
-            e.printStackTrace(); // skriver ut feilen om det blir noe
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (leser != null) {
+                    leser.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        /*
-         * Leser alle filene og oppretter hashmaps for hver enkelt subsekvens
-         */
+    /****************************************************************************************************
+     * Leser alle filene og oppretter hashmaps for hver enkelt subsekvens
+     ****************************************************************************************************/
 
         int antallLest = 0;
         long sek = System.currentTimeMillis() / 1000;
@@ -57,9 +69,11 @@ public class Oblig5Del1 {
         int antallHashmaps = beholder.hvorMangeHashmap();
         System.out.println("I Denne beholderen er det: " + antallHashmaps + " HashMaps");
 
-        /*
-         * Fletter alle hashmaps og legger, slik at jeg kun har én hashmaps, som er en samling av alle
-         */
+    /***************************************************************************************************
+     * Fletter alle hashmaps og legger, slik at jeg kun har én hashmaps, som er en
+     * samling av alle
+     ***************************************************************************************************/
+
         oppgave = "Fletter HashMaps";
         antallLest = 0;
         int total = beholder.hvorMangeHashmap()-1;
@@ -70,25 +84,30 @@ public class Oblig5Del1 {
             HashMap<String, Subsekvens> sammenslatt = SubsekvensRegister.flettSammenTo(hm1, hm2);
             antallLest++;
             statusBar(antallLest,total, oppgave, sek);   
-            beholder.leggTilHashmap(sammenslatt);
+            beholder.leggTilHashmap(sammenslatt); 
         }
-        /*
-         * Da har jeg flettet alle, sitter igjen med 1 hashmap. Denne lagrer jeg da i en
-         * HashMap flettetHashmap, slik at jeg kan lese av den, men jeg må legge til
-         * igjen etter det siden jeg fjerner den ved å returnere den.
-         */
+    /****************************************************************************************************
+     * Da har jeg flettet alle, sitter igjen med 1 hashmap. Denne lagrer jeg da i en
+     * HashMap flettetHashmap, slik at jeg kan lese av den, men jeg må legge til
+     * igjen etter det siden jeg fjerner den ved å returnere den.
+     ****************************************************************************************************/
+        System.out.println();
         HashMap<String, Subsekvens> flettetHashmap = beholder.taUtHashmap();
-        beholder.leggTilHashmap(flettetHashmap);
 
         int teller = 0;
-        Subsekvens stoerst = null; // lager en peker stoerst som initialiseres som null, etter loopen vil den peke
-                                   // på en key
+        Subsekvens stoerst = null;
         int stoerstVerdi = 0;
         for (String key : flettetHashmap.keySet()) {
             teller++;
             if (flettetHashmap.get(key).hentAntall() > stoerstVerdi) {
                 stoerstVerdi = flettetHashmap.get(key).hentAntall();
                 stoerst = flettetHashmap.get(key);
+            }
+        }
+        ArrayDeque<Subsekvens> subsekvenStoerste = new ArrayDeque<>();
+        for (String key : flettetHashmap.keySet()) {
+            if(flettetHashmap.get(key).hentAntall() == stoerst.hentAntall()){
+                subsekvenStoerste.add(flettetHashmap.get(key));
             }
         }
         System.out.println();
@@ -99,6 +118,11 @@ public class Oblig5Del1 {
         System.out.println("Oppgaven tok " + (int)avsluttet + " ms, som er " + (float)(avsluttet/1000) + "sek");
 
     }
+    
+    /*****************************************************************************************************
+     * Litt pynt for terminalen
+     *****************************************************************************************************/
+
     public static void statusBar(int antall, int total, String oppgave, long sek){
         String ANSI_RESET = "\u001B[0m";
         String ANSI_RED = "\033[0;31m";
@@ -112,6 +136,7 @@ public class Oblig5Del1 {
         } else {
             timeglass = "⧗";
         }
+        
         if(prosent==100){
             farge = ANSI_GREEN;
             tekst = "Fullført";
@@ -120,7 +145,6 @@ public class Oblig5Del1 {
             tekst ="";
         }
         System.out.print(farge+"\r                                          " + (int) prosent + "% "+ tekst);
-        System.out.print("\r"+"⦾ "+ oppgave + "   "+timeglass+ "  " +((int)(current-sek))+" sek"  + ANSI_RESET + "\r");
-
-    }
+        System.out.print("\r"+"⦾ "+ oppgave + "   "+timeglass+ "  " +((int)(current-sek))+" sek"  + ANSI_RESET + "\r");   
+    }   
 }

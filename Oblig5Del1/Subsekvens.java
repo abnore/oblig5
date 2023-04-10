@@ -16,7 +16,7 @@ public class Subsekvens {
         return antall;
     }
     public void endreAntall(int nyttTall){
-        antall = nyttTall;
+        antall += nyttTall;
     }
 
     @Override

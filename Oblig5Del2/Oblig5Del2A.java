@@ -1,3 +1,8 @@
+
+/*
+* Obligatorisk oppgave 5 del II A - bruk av tråder for innlesning, men ikke for fletting av hashmaps
+* Andreas Nore - andrebn@uio.no
+*/
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -5,14 +10,10 @@ import java.util.ArrayDeque;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
-public class Hoved {
-    /*
-    * Dette er testprogrammet mitt jeg bruker underveis for å catche bugs, prøve ut nye ting og eksperimentere
-    */
+public class Oblig5Del2A {
     public static void main(String[] args) {
         long tid = System.currentTimeMillis();
         Monitor1 monitor1 = new Monitor1();
-        // final int ANT_TRAADER = 9;
 
         if (args.length == 0) { // dette gjør at vi må legge til et mappenavn
             System.err.println("Error: Vennligst gi et mappenavn som et command-line argument.");
@@ -22,9 +23,9 @@ public class Hoved {
         System.out.println("Oppretter en beholder for mappenavnet: " + mappenavn);
         long starttid = System.currentTimeMillis();
   
-        /*
-         * Leser inn filen
-         */
+    /****************************************************************************************************
+     * Leser inn filen
+     ****************************************************************************************************/
 
         BufferedReader leser = null;
         ArrayDeque<String> filnavn = new ArrayDeque<>();
@@ -32,7 +33,6 @@ public class Hoved {
             FileReader innlestFil = new FileReader(mappenavn + "/metadata.csv");
             leser = new BufferedReader(innlestFil);
             String linje;
-            // Scanner sc = new Scanner(new File(mappenavn + "/metadata.csv"));
             while ((linje = leser.readLine()) != null) {
                 String[] lestLinje = linje.split(","); // her fjerner jeg "true, false" referanse ##############
                 filnavn.add(lestLinje[0]); // går inn i metadatafilen og leser linjene inn i filnavn
@@ -49,9 +49,9 @@ public class Hoved {
             }
         }
 
-        /*
-         * Oppretter hashmaps
-         */
+    /****************************************************************************************************
+     * Oppretter hashmaps med tråder
+     ****************************************************************************************************/
 
         CountDownLatch countdown = new CountDownLatch(filnavn.size());
         for (String string : filnavn) { // Oppretter hashmaps i beholderen basert på metadata.csv
@@ -60,33 +60,34 @@ public class Hoved {
             Thread traad = new Thread(lt, string);
             traad.start();          
         }
-        try {
-            System.out.println("Venter på å lage tråder...");
-            countdown.await();
-            
-        } catch (Exception e) {
-            System.err.println("Tydeligvis var det noe galt med countdownen");
-        }
-        System.out.println("Ferdig med å vente");
+            try {
+                System.out.println("venter på trådene...");                
+                countdown.await();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         float lesetid = System.currentTimeMillis() - starttid;
-        System.out.println((int)lesetid/1000 +" sekunder med å lage hashmaps");
+        System.out.println("Det tok "+(int)lesetid/1000 +" sekunder med å lage hashmaps");
 
-        /*
-         *  Fletter
-         */
-
+    /****************************************************************************************************
+     * Fletter uten tråder
+     ****************************************************************************************************/
+       HashMap<String, Subsekvens> flettetHashmap = null;
+     try {
         while (monitor1.hvorMangeHashmap() > 1) {
             HashMap<String, Subsekvens> hm1 = monitor1.taUtHashmap();
             HashMap<String, Subsekvens> hm2 = monitor1.taUtHashmap();
             HashMap<String, Subsekvens> sammenslatt = SubsekvensRegister.flettSammenTo(hm1, hm2);
             monitor1.leggTilHashmap(sammenslatt);
+            flettetHashmap = monitor1.taUtHashmap();
         }
-         // Da har jeg flettet alle, sitter igjen med 1 hashmap. Denne lagrer jeg da i en HashMap flettetHashmap, slik at jeg kan lese av den
-        HashMap<String, Subsekvens> flettetHashmap = monitor1.taUtHashmap();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
 
-        /*
-         * Finner den største subsekvensen
-         */
+    /****************************************************************************************************
+     * Finner den største subsekvensen
+     ****************************************************************************************************/
         int teller = 0;
         Subsekvens stoerst = null;
         int stoerstVerdi = 0;
@@ -97,16 +98,15 @@ public class Hoved {
                 stoerst = flettetHashmap.get(key);
             }
         }
-        /*
-         * Ferdig
-         */
+    /****************************************************************************************************
+     * Ferdig
+     ****************************************************************************************************/
         System.out.println();
         System.out.println("Subsekvensen med flest antall er " + stoerst);
         System.out.println();
         System.out.println("Vi fikk " + teller + " subsekvenser");
         float avsluttet = System.currentTimeMillis() - tid;
-        System.out.println("Oppgaven tok " + (int) avsluttet + " ms, som er " + (float) (avsluttet / 1000) + "sek");
-
+        System.out.println("\u001B[32m"+"Oppgaven tok " + (int) avsluttet + " ms, som er " + (float) (avsluttet / 1000) + "sek"+ "\u001B[0m");
     }
 }
 

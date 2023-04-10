@@ -2,41 +2,38 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.HashMap;
 import java.util.concurrent.locks.Condition;
-// import java.util.concurrent.CountDownLatch;
 
 public class Monitor2 {
-    private static Lock laas;
-    private static Condition ferdig;
+    private Lock laas = new ReentrantLock(true); // en lås for å sikre kritiske regioner
+    private Condition ikkeTomt = laas.newCondition(); // en tilstand for å holde styr på om stativet ikke er tomt
+   
     SubsekvensRegister subsekvensRegister;
 
-    public Monitor2(Monitor1 monitor) {
-        subsekvensRegister = monitor.hentRegister();
-        laas = new ReentrantLock();
-        ferdig = laas.newCondition();
+    public Monitor2(SubsekvensRegister subsekvensRegister) {
+        this.subsekvensRegister = subsekvensRegister;
     }
+
+
     public void leggTilHashmap(HashMap<String, Subsekvens> hm) {
         laas.lock();
         try {
             subsekvensRegister.leggTilHashmap(hm);
+            ikkeTomt.signalAll();
         } finally {
-            ferdig.signalAll();
             laas.unlock();
         }
     }
 
     public HashMap<String, Subsekvens> taUtHashmap() throws InterruptedException{
         laas.lock();
-        System.out.println("Skal til å ta ut..");
-            try {
-                if(subsekvensRegister.hvorMangeHashmap() >= 1){
-                    return subsekvensRegister.taUtHashmap();
-                    } ferdig.await();  
-           } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                laas.unlock();
+        try {
+            while (subsekvensRegister.hvorMangeHashmap()==0){
+                ikkeTomt.await();
             }
-            return subsekvensRegister.taUtHashmap(); 
+            return subsekvensRegister.taUtHashmap();
+        } finally {
+            laas.unlock();
+        }
     }
 
     public int hvorMangeHashmap() {
@@ -53,14 +50,7 @@ public class Monitor2 {
     }
 
     public static HashMap<String, Subsekvens> flettSammenTo(HashMap<String, Subsekvens> hm1, HashMap<String, Subsekvens> hm2) {
-        laas.lock();
-        System.out.println("akkurat låst for fletting");
-        try {
-            System.out.println("flettet 2");
-            return SubsekvensRegister.flettSammenTo(hm1, hm2);
-        } finally {
-            laas.unlock();
-        }
+        return SubsekvensRegister.flettSammenTo(hm1, hm2);
     }
 
 }
