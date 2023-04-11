@@ -1,12 +1,15 @@
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.HashMap;
 import java.util.concurrent.locks.Condition;
 
 
 public class Monitor2 {
-    private Lock laas = new ReentrantLock(true); // en lås for å sikre kritiske regioner
-    private Condition ikkeTomt = laas.newCondition(); // en tilstand for å holde styr på om stativet ikke er tomt
+    private ReadWriteLock laas = new ReentrantReadWriteLock(true);
+    private Lock readLock = laas.readLock();
+    private Lock writeLock = laas.writeLock();
+    private Condition ikkeTomt = writeLock.newCondition();
     SubsekvensRegister subsekvensRegister;
     
     @SuppressWarnings("unchecked")
@@ -14,29 +17,29 @@ public class Monitor2 {
 
     public Monitor2(SubsekvensRegister subsekvensRegister) {
         this.subsekvensRegister = subsekvensRegister;
-        mapPar[0] = new HashMap<String, Subsekvens>();
-        mapPar[1] = new HashMap<String, Subsekvens>();
+        mapPar[0] = new HashMap<>();
+        mapPar[1] = new HashMap<>();
     }
 
     public void leggTilHashmap(HashMap<String, Subsekvens> hm) {
-        laas.lock();
+        writeLock.lock();
         try {
             subsekvensRegister.leggTilHashmap(hm);
         } finally {
-            laas.unlock();
+            writeLock.unlock();
         }
     }
     public void settInnFlettet(HashMap<String, Subsekvens> hm) {
-        laas.lock();
+        writeLock.lock();
         try {
             leggTilHashmap(hm);
             ikkeTomt.signalAll();
         } finally {
-            laas.unlock();
+            writeLock.unlock();
         }
     }
     public HashMap<String, Subsekvens>[] hentUtTo() throws InterruptedException{
-        laas.lock();
+         writeLock.lock();
         try{
             while (hvorMangeHashmap() < 2) {
                 ikkeTomt.await();
@@ -46,7 +49,7 @@ public class Monitor2 {
 
             return mapPar;
         } finally {
-            laas.unlock();
+            writeLock.unlock();
         }
     }
     public HashMap<String, Subsekvens> taUtHashmap() throws InterruptedException{
@@ -54,11 +57,11 @@ public class Monitor2 {
     }
 
     public int hvorMangeHashmap() {
-        laas.lock();
+        readLock.lock();
         try {
             return subsekvensRegister.hvorMangeHashmap();   
         } finally {
-            laas.unlock();
+            readLock.unlock();
         }
     }
 

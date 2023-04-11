@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class Oblig5del2B {
     public static void main(String[] args) throws InterruptedException{
+
         long tid = System.currentTimeMillis();
 
         SubsekvensRegister subsekvensRegister = new SubsekvensRegister();
@@ -58,8 +59,9 @@ public class Oblig5del2B {
         starttid = System.currentTimeMillis();
         
         CountDownLatch countdownLes = new CountDownLatch(filnavnOversikt.size());
-        LeseTrad lesetraad = new LeseTrad(monitor2, mappenavn + "/", countdownLes);
+        
         for (String filnavn : filnavnOversikt) { // Oppretter hashmaps i beholderen basert på metadata.csv
+            LeseTrad lesetraad = new LeseTrad(monitor2, mappenavn + "/", countdownLes);
             Thread traad = new Thread(lesetraad, filnavn);
             traad.start();
         }
@@ -75,9 +77,9 @@ public class Oblig5del2B {
         starttid = System.currentTimeMillis();
 
         CountDownLatch countdownFlett = new CountDownLatch(ANT_TRAADER);
-        FletteTrad flettetraad = new FletteTrad(monitor2, countdownFlett);
-
+        
         for(int i = 0; i < ANT_TRAADER; i++){
+            FletteTrad flettetraad = new FletteTrad(monitor2, countdownFlett);
             Thread traad = new Thread(flettetraad);
             traad.start();
         }

@@ -18,10 +18,11 @@ public class FletteTrad implements Runnable{
                 HashMap<String, Subsekvens> flettet = SubsekvensRegister.flettSammenTo(mapPar[0], mapPar[1]);
                 monitor.settInnFlettet(flettet);
             }
-            countdown.countDown();
         } catch (Exception e) {
           System.out.println("FAEN TA!!");
           e.printStackTrace();
+        } finally {
+        countdown.countDown();
         }
         
     }

@@ -29,14 +29,13 @@ public class SubsekvensRegister {
          * Leser inn en fil og returnerer en HashMap som senere
          * skal legges inn i beholderen / arraylisten
          */
-        BufferedReader filLeser = null;
 
         HashMap<String, Subsekvens> returnerendeHashMap = new HashMap<>();
         // Legge inn i en try catch pga File og BufferedReader trenger en Exception
         // handler, spesielt FileNotFoundException - men slår sammen til én IOException
-        try {
-            FileReader fil = new FileReader(filnavn);
-            filLeser = new BufferedReader(fil);
+        try (FileReader fil = new FileReader(filnavn);
+                BufferedReader filLeser = new BufferedReader(fil)){
+            
             String linje;
 
             while ((linje = filLeser.readLine()) != null) {
@@ -59,15 +58,7 @@ public class SubsekvensRegister {
         } catch (IOException e) {
             System.err.println("Her har det skjedd en feil med filen!"); // Velger System.err av pedagogiske grunner
             e.printStackTrace(System.err);
-        } finally {
-            try {
-                if (filLeser != null) {
-                    filLeser.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        } 
         return returnerendeHashMap;
     }
 
