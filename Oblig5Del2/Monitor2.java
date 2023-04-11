@@ -25,6 +25,7 @@ public class Monitor2 {
         writeLock.lock();
         try {
             subsekvensRegister.leggTilHashmap(hm);
+            ikkeTomt.signalAll();
         } finally {
             writeLock.unlock();
         }
@@ -41,9 +42,10 @@ public class Monitor2 {
     public HashMap<String, Subsekvens>[] hentUtTo() throws InterruptedException{
          writeLock.lock();
         try{
-            while (hvorMangeHashmap() < 2) {
-                ikkeTomt.await();
+           if (hvorMangeHashmap() < 2) {
+                return null;
             }
+
             mapPar[0] = taUtHashmap();
             mapPar[1] = taUtHashmap();
 

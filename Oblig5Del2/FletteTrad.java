@@ -13,14 +13,16 @@ public class FletteTrad implements Runnable{
     }
     public void run() {
         try {
-            while(!Thread.interrupted() && monitor.hvorMangeHashmap()>1){
+            while(!Thread.interrupted()){
                 mapPar = monitor.hentUtTo();
+                if(mapPar == null){
+                    break;
+                }
                 HashMap<String, Subsekvens> flettet = SubsekvensRegister.flettSammenTo(mapPar[0], mapPar[1]);
                 monitor.settInnFlettet(flettet);
             }
         } catch (Exception e) {
-          System.out.println("FAEN TA!!");
-          e.printStackTrace();
+          System.out.println("Tråd "+Thread.currentThread().getName()+" er ferdig");
         } finally {
         countdown.countDown();
         }

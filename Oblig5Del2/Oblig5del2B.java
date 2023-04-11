@@ -6,7 +6,11 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.io.FileReader;
 import java.io.BufferedReader;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Oblig5del2B {
     public static void main(String[] args) throws InterruptedException{
@@ -52,24 +56,36 @@ public class Oblig5del2B {
         }
         float lesetid = System.currentTimeMillis() - starttid;
         System.out.println("Det tok " + lesetid + " ms med å lese inn filene");
+        System.out.println("Det endte opp med: "+filnavnOversikt.size());
 
     /****************************************************************************************************
      * Oppretter hashmaps med tråder
      ****************************************************************************************************/
         starttid = System.currentTimeMillis();
         
+        int traaderForLesing = Runtime.getRuntime().availableProcessors();
         CountDownLatch countdownLes = new CountDownLatch(filnavnOversikt.size());
-        
-        for (String filnavn : filnavnOversikt) { // Oppretter hashmaps i beholderen basert på metadata.csv
-            LeseTrad lesetraad = new LeseTrad(monitor2, mappenavn + "/", countdownLes);
-            Thread traad = new Thread(lesetraad, filnavn);
-            traad.start();
+        // CountDownLatch countdownLes = new CountDownLatch(traaderForLesing);
+        ExecutorService executor = Executors.newFixedThreadPool(traaderForLesing);
+        BlockingQueue<String> filnavnKo = new LinkedBlockingQueue<>(filnavnOversikt);
+
+        // for (String filnavn : filnavnOversikt) { // Oppretter hashmaps i beholderen basert på metadata.csv
+        //     LeseTrad lesetraad = new LeseTrad(monitor2, mappenavn + "/", countdownLes);
+        //     Thread traad = new Thread(lesetraad, filnavn);
+        //     traad.start();
+        // }
+        for (int str = 0; str < filnavnOversikt.size(); str++) {
+            LeseTrad lesetraad = new LeseTrad(monitor2, mappenavn+"/", countdownLes, filnavnKo);
+            executor.submit(lesetraad);
         }
+
+        executor.shutdown();
         System.out.println("venter på trådene...");
         countdownLes.await();
   
         lesetid = System.currentTimeMillis() - starttid;
         System.out.println("Det tok " + (int) lesetid / 1000 + " sekunder å lage hashmaps");
+        System.out.println("Vi lagde: "+monitor2.hvorMangeHashmap()+" hashmaps");
 
     /****************************************************************************************************
      * Fletter hashmaps med tråder
