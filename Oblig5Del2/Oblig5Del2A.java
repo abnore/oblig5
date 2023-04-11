@@ -11,7 +11,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 
 public class Oblig5Del2A {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException{
         long tid = System.currentTimeMillis();
         Monitor1 monitor1 = new Monitor1();
 
@@ -60,34 +60,27 @@ public class Oblig5Del2A {
             Thread traad = new Thread(lt, string);
             traad.start();          
         }
-            try {
-                System.out.println("venter på trådene...");                
-                countdown.await();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+          
+        System.out.println("venter på trådene...");                
+        countdown.await();
+      
         float lesetid = System.currentTimeMillis() - starttid;
         System.out.println("Det tok "+(int)lesetid/1000 +" sekunder med å lage hashmaps");
 
     /****************************************************************************************************
      * Fletter uten tråder
      ****************************************************************************************************/
-       HashMap<String, Subsekvens> flettetHashmap = null;
-     try {
-        while (monitor1.hvorMangeHashmap() > 1) {
-            HashMap<String, Subsekvens> hm1 = monitor1.taUtHashmap();
-            HashMap<String, Subsekvens> hm2 = monitor1.taUtHashmap();
-            HashMap<String, Subsekvens> sammenslatt = SubsekvensRegister.flettSammenTo(hm1, hm2);
-            monitor1.leggTilHashmap(sammenslatt);
-            flettetHashmap = monitor1.taUtHashmap();
+ 
+        while (monitor1.hvorMangeHashmap() >= 2 ) 
+        {
+            monitor1.leggTilHashmap(SubsekvensRegister.flettSammenTo(monitor1.taUtHashmap(), monitor1.taUtHashmap()));
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
 
     /****************************************************************************************************
-     * Finner den største subsekvensen
-     ****************************************************************************************************/
+    * Finner den største subsekvensen
+    ****************************************************************************************************/
+
+        HashMap<String, Subsekvens> flettetHashmap = monitor1.taUtHashmap();
         int teller = 0;
         Subsekvens stoerst = null;
         int stoerstVerdi = 0;
