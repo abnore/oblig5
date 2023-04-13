@@ -12,80 +12,79 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Oblig5del2B {
+public class Oblig5Del2B {
     public static void main(String[] args) throws InterruptedException{
-
+        /** Måler tiden fra programstart til slutt*/
         long tid = System.currentTimeMillis();
-
-        SubsekvensRegister subsekvensRegister = new SubsekvensRegister();
-        Monitor2 monitor2 = new Monitor2(subsekvensRegister);
+        /** monitor objektet ansvarlig for kjøring av tråder */
+        Monitor2 monitor2 = new Monitor2();
+        /** Maks antall tråder for fletting */
         final int ANT_TRAADER = 8;
 
         if (args.length == 0) { // dette gjør at vi må legge til et mappenavn
             System.err.println("Error: Vennligst gi et mappenavn som et command-line argument.");
             return;
         }
-        String mappenavn = args[0]; // Det som skrives inn som parameter i terminal
-        System.out.println("Oppretter en beholder for mappenavnet: " + mappenavn);
+        /** Parameter gitt av bruker for hvilken mappe vi skal teste */
+        String mappenavn = args[0];
+
+        System.out.format("\n\u001B[36m" + "+----------------------------------------+--------------+%n");
+        System.out.format( "| %-34s | %-12s |%n", "Oppretter en beholder for mappenavnet:", mappenavn);
+        System.out.format("\u001B[36m" + "+----------------------------------------+--------------+%n" + "\u001B[0m\n");
 
     /****************************************************************************************************
-     * Leser inn filene
+     * Leser inn filene og lagrer de i filnavnOversikt
      ****************************************************************************************************/
         long starttid = System.currentTimeMillis();
-        
-        BufferedReader leser = null;
+        /** Lagrer alle filnavn i denne beholderen */
         ArrayDeque<String> filnavnOversikt = new ArrayDeque<>();
-        try {
-            FileReader innlestFil = new FileReader(mappenavn + "/metadata.csv");
-            leser = new BufferedReader(innlestFil);
+
+        /** Anvender meg av en try-with av ressursene for å avgrense ressurslekkasjer da både FileReader og BufferedReader er Closable*/
+        try (FileReader innlestFil = new FileReader(mappenavn + "/metadata.csv");
+             BufferedReader leser = new BufferedReader(innlestFil)) 
+        {
             String linje;
             while ((linje = leser.readLine()) != null) {
                 String[] lestLinje = linje.split(","); // her fjerner jeg "true, false" referanse ##############
                 filnavnOversikt.add(lestLinje[0]); // går inn i metadatafilen og leser linjene inn i filnavnOversikt
             }
         } catch (IOException e) {
-            e.printStackTrace(); // skriver ut feilen om det blir noe
-        } finally {
-            try {
-                if (leser != null) {
-                    leser.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+         
+            e.printStackTrace();
         }
         float lesetid = System.currentTimeMillis() - starttid;
-        System.out.println("Det tok " + lesetid + " ms med å lese inn filene");
-        System.out.println("Det endte opp med: "+filnavnOversikt.size());
+  
+        System.out.printf("\u001B[32m"+"Det tok " +"%.2f" + " ms med å lese inn filene\n"+"\u001B[0m", lesetid);
+        System.out.println("▹ Leste "+filnavnOversikt.size()+" filer");
 
     /****************************************************************************************************
-     * Oppretter hashmaps med tråder
+     * Oppretter hashmaps med tråder, executorService og BlockingQueue
      ****************************************************************************************************/
         starttid = System.currentTimeMillis();
         
+        /** Anvender meg av så mange logiske kjerner JVM er i stand til å gi meg for å øke antall parallelle oppgaver */
         int traaderForLesing = Runtime.getRuntime().availableProcessors();
+        System.out.println("▹ "+traaderForLesing+" tråder tilgjengelig for lesing");
+        /** bruker countdownlatch størrelse for antall filer og teller ned for hver fil lest */
         CountDownLatch countdownLes = new CountDownLatch(filnavnOversikt.size());
-        // CountDownLatch countdownLes = new CountDownLatch(traaderForLesing);
+        /** executor slik at jeg kan delegere til trådene i henhold til oppgavene som gjenstår */
         ExecutorService executor = Executors.newFixedThreadPool(traaderForLesing);
+        /** gir som paramterer alle filene i en blockingqueue for å bidra til oppgavesynkronisering */
         BlockingQueue<String> filnavnKo = new LinkedBlockingQueue<>(filnavnOversikt);
 
-        // for (String filnavn : filnavnOversikt) { // Oppretter hashmaps i beholderen basert på metadata.csv
-        //     LeseTrad lesetraad = new LeseTrad(monitor2, mappenavn + "/", countdownLes);
-        //     Thread traad = new Thread(lesetraad, filnavn);
-        //     traad.start();
-        // }
-        for (int str = 0; str < filnavnOversikt.size(); str++) {
+        /** Oppretter og submiter tråder til executor. Det ideelle antallet */
+        for (int str = 0; str < traaderForLesing; str++) {
             LeseTrad lesetraad = new LeseTrad(monitor2, mappenavn+"/", countdownLes, filnavnKo);
             executor.submit(lesetraad);
         }
-
+        /** avslutter executor og awaiter på countdown for å fortsette programmet */
         executor.shutdown();
-        System.out.println("venter på trådene...");
+        System.out.println("\nventer på trådene...");
         countdownLes.await();
   
         lesetid = System.currentTimeMillis() - starttid;
-        System.out.println("Det tok " + (int) lesetid / 1000 + " sekunder å lage hashmaps");
-        System.out.println("Vi lagde: "+monitor2.hvorMangeHashmap()+" hashmaps");
+        System.out.printf("\u001B[32m"+"Det tok " + "%.2f" + " s å lage hashmaps\n"+ "\u001B[0m",lesetid / 1000);
+        System.out.println("▹ Lagde "+monitor2.hvorMangeHashmap()+" hashmaps");
 
     /****************************************************************************************************
      * Fletter hashmaps med tråder
@@ -94,6 +93,7 @@ public class Oblig5del2B {
 
         CountDownLatch countdownFlett = new CountDownLatch(ANT_TRAADER);
         
+        System.out.println("\n▹ " + ANT_TRAADER + " tråder tilgjengelig for fletting");
         for(int i = 0; i < ANT_TRAADER; i++){
             FletteTrad flettetraad = new FletteTrad(monitor2, countdownFlett);
             Thread traad = new Thread(flettetraad);
@@ -103,7 +103,7 @@ public class Oblig5del2B {
         System.out.println("venter på trådene...");
         countdownFlett.await();
         lesetid = System.currentTimeMillis() - starttid;
-        System.out.println("Det tok " + lesetid + " ms å flette hashmaps");
+        System.out.printf("\u001B[32mDet tok " + "%.2f" + " s å flette hashmaps\u001B[0m\n", lesetid/1000);
   
         /*****************************************************************************************************
          * Finner den største subsekvensen
@@ -125,11 +125,14 @@ public class Oblig5del2B {
      * Ferdig
      *****************************************************************************************************/
      
-        System.out.println();
-        System.out.println("Subsekvensen med flest antall er " + stoerst);
-        System.out.println();
-        System.out.println("Vi fikk " + teller + " subsekvenser");
+        System.out.println("\033[3m▹ Fikk " + teller + " subsekvenser\033[0m");
         float avsluttet = System.currentTimeMillis() - tid;
-        System.out.println("Oppgaven tok " + (int) avsluttet + " ms, som er " + (float) (avsluttet / 1000) + "sek");        
+        System.out.println("\n\u001B[32m▹ Oppgaven tok " + (int) avsluttet + " ms, som er " + (float) (avsluttet / 1000) + "sek\u001B[0m");        
+        System.out.println();
+        System.out.println("        \033[4;31m▷ Subsekvensen med flest antall er "+ stoerst+"\033[0m");
+        System.out.println();
+        System.out.println("\033[3m(Merk: det kan være flere med samme verdi...)\033[0m");
+        System.out.println();
+        System.out.println("┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅");
     }
 }

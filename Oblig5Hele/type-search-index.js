@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"<Unnamed>","l":"FletteTrad"},{"p":"<Unnamed>","l":"LeseTrad"},{"p":"<Unnamed>","l":"Monitor2"},{"p":"<Unnamed>","l":"Oblig5Hele"},{"p":"<Unnamed>","l":"Subsekvens"},{"p":"<Unnamed>","l":"SubsekvensRegister"}];updateSearchResults();

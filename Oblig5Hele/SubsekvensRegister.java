@@ -1,5 +1,10 @@
 /**
- * Klassen SubsekvensRegister som har en beholder, og metoder for å hente ut, lese filer og flette hashmaps.
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  *
  * @author Andreas Nore - andrebn@uio.no
  */
@@ -10,6 +15,11 @@ import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/**
+ * Klassen {@code SubsekvensRegister} har en beholder, og metodene {@code leggTilHashmap}, {@code taUtHashmap}, {@code hvorMangeHashmap}, 
+ * {@code lesFil} og {@code flettSammenTo}.
+ * 
+ */
 public class SubsekvensRegister {
     /** Lokal beholder som holder HashMaps */
     private Deque<HashMap<String, Subsekvens>> hashBeholder = new ArrayDeque<>();
@@ -45,12 +55,15 @@ public class SubsekvensRegister {
 
     /**
      * Statisk metode som tar inn et filnavn der det er sekvenser med bokstaver. Lager en ny streng og oppretter
-     * en Subsekvens og et antall (1), lagrer dette i en HashMap og returnerer den for lagring
+     * en {@code Subsekvens} med antall 1, lagrer dette i en {@code HashMap} og returnerer den for lagring.
      * 
      * @param filnavn   tar inn en string som filnavn
      * @return  HashMap<>
+     * 
+     * @see Subsekvens
      */
-    public static HashMap<String, Subsekvens> lesFil(String filnavn) {
+
+     public static HashMap<String, Subsekvens> lesFil(String filnavn) {
      
         HashMap<String, Subsekvens> returnerendeHashMap = new HashMap<>();
         // Legge inn i en try catch pga File og BufferedReader trenger en Exception
@@ -84,31 +97,28 @@ public class SubsekvensRegister {
         return returnerendeHashMap;
     }
     /**
-     * Statisk metode som tar tar to HashMaps og slår den sammen. Om noen deler sekvens øker vi antallet. returnerer en ny HashMap som er
-     * kombinasjonen av de to med oppdaterte antall
+     * Statisk metode som tar tar to HashMaps og slår den sammen. Om noen sekvenser er like summerer vi antallet deres.<p>
+     * Returnerer en ny {@code HashMap} som er en kombinasjonen av de to med oppdaterte antall.
      *  
-     * @param hm1   første hashmap
-     * @param hm2   andre hashmap
-     * @return      HashMap<>
+     * @param hm1    første hashmap
+     * @param hm2    andre hashmap
+     * @return res   HashMap<> som er flettet
      */
-    public static HashMap<String, Subsekvens> flettSammenTo(HashMap<String, Subsekvens> hm1,
-            HashMap<String, Subsekvens> hm2) {
+    public static HashMap<String, Subsekvens> flettSammenTo(HashMap<String, Subsekvens> hm1, HashMap<String, Subsekvens> hm2) {
+        /** oppretterer pekere til resultatet og den minste av parameterene */
         HashMap<String, Subsekvens> res, hash2;
 
-        if (hm1.size() >= hm2.size()) { // initialiserer resMapen som den største av de den tar inn
-            res = new HashMap<>(hm1);
-            hash2 = hm2;
-        } else {
-            res = new HashMap<>(hm2);
-            hash2 = hm1;
-        }
+        /** initialiserer res som den største av de den tar inn */
+        res = (hm1.size() >= hm2.size()) ? new HashMap<>(hm1) : new HashMap<>(hm2);
+        hash2 = (hm1.size() >= hm2.size()) ? hm2 : hm1;
+
         for (String key : hash2.keySet()) {
             if (res.containsKey(key)) {
-                Subsekvens value1 = hash2.get(key); // henter ut Subsekvensene fra den jeg sammenligner med og den nye
-                Subsekvens value2 = res.get(key); // verdien på den som er puttet inn
-                value2.endreAntall(value1.hentAntall()); // endrer tallet på den som er i den nye
+                Subsekvens value1 = hash2.get(key);
+                Subsekvens value2 = res.get(key);
+                value2.endreAntall(value1.hentAntall()); // Oppdaterer antallet om den finnes i begge
             } else {
-                res.put(key, hash2.get(key)); // om ikke, bare putter den inn
+                res.put(key, hash2.get(key)); // putter den inn om den ikke allerede finnes
             }
         }
         return res;

@@ -1,5 +1,10 @@
 /**
- * Monitor objektet som tar hånd om synkronisering/parallellisering
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * 
  * @author Andreas Nore - andrebn@uio.no
  */
@@ -9,13 +14,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 
+/**
+ * Klassen {@code Monitor2} tar hånd om synkronisering/parallellisering ifm
+ * både innlesing av filer, opprettelse av {@code HashMaps} og fletting.
+ * <p> Anvender seg av {@code ReadWriteLock} for å synkronisere lesing og fletting
+ * 
+ * @see FletteTrad
+ * @see LeseTrad
+ * @see ReadWriteLock
+ */
 public class Monitor2 {
     /** fair read/write lock som setter trådene i kø */
-    private ReadWriteLock laas = new ReentrantReadWriteLock(true);
+    private ReadWriteLock laas;
     /** readlock slik at flere tråder kan lese av informasjon samtidig */
-    private Lock readLock = laas.readLock();
+    private Lock readLock;
     /** writelock for kritiske regioner, slik at endring kan kun gjøres av én tråd */
-    private Lock writeLock = laas.writeLock();
+    private Lock writeLock;
     /** beholder for hashmaps initieres her */
     SubsekvensRegister subsekvensRegister;
     /** lokalt brukt for fletting av to HasMaps samtidig */
@@ -23,10 +37,14 @@ public class Monitor2 {
 
     /**
      * Konstruktøren initierer beholdere og er ansvarlig for synkronisering mellom tråder
+     * 
      */
     public Monitor2() {
-        this.subsekvensRegister = new SubsekvensRegister();
+        subsekvensRegister = new SubsekvensRegister();
         mapPar = new ArrayDeque<>();
+        laas = new ReentrantReadWriteLock(true);
+        readLock = laas.readLock();
+        writeLock = laas.writeLock();
     }
 
     /**
@@ -59,11 +77,14 @@ public class Monitor2 {
             writeLock.unlock();
         }
     }
+    
     /**
-     * Henter ut to HashMaps samtidig og returnerer en beholder på to HashMaps. Om det er 0 eller 1 HashMaps returnerer den null som interrupter
-     * potensielle tråder som står i kø. Dette gjør at tråden som tar ut de to siste legger inn den siste, resten stopper.
+     * Henter ut og returnerer en beholder på to {@code HashMaps}. Om
+     * det er 0 eller 1 {@code HashMaps} returnerer den null som interrupter
+     * potensielle tråder som står i kø. Dette gjør at tråden som tar ut de to gjenværende
+     * legger inn den siste, resten stopper.
      * 
-     * @return  Deque<> med to stk HashMaps
+     * @return ArrayDeque<>  med to stk {@code HashMaps}
      */
     public ArrayDeque<HashMap<String, Subsekvens>> hentUtTo(){
          writeLock.lock();
@@ -81,7 +102,7 @@ public class Monitor2 {
         }
     }
     /**
-     * Kalles kun av hentUtTo og trenger derfor ingen lock eller conditions da kun en tråd vil kalle den om gangen
+     * Kalles kun av {@code hentUtTo} og trenger derfor ingen lock eller conditions da kun en tråd vil kalle den om gangen. <p>Returnerer {@code null} om registeret er tomt.
      * 
      * @return HashMap<String, Subsekvens>
      */
