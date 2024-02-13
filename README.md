@@ -1,2 +1,2 @@
-# oblig5
-Her er oblig 5 delt inn i to deler
+# oblig5 IN1010 v23
+Del 1, del 2 og hele - inkludert frivillig oppgave
